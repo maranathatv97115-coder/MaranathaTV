@@ -1,1 +1,106 @@
-!DOCTYPE html, html lang égal fr, head, meta charset UTF-8, meta name viewport content width device width initial scale 1, title Maranalpa TV title, head, body, h1 Bienvenue sur Maranalpa TV h1, p Mon site est en cours de création p, button Cliquez ici button, footer, p 2026 Maranalpa TV p, footer, body, html
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ste-Rose Maranatha TV</title>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body {
+    background: linear-gradient(160deg, #0f2027, #203a43, #2c5364);
+    color: #fff;
+    font-family: Arial, Helvetica, sans-serif;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    overflow: hidden;
+  }
+  h1 {
+    font-size: 3.2vw;
+    margin-bottom: 0.5em;
+    letter-spacing: 1px;
+  }
+  h2 {
+    font-size: 1.6vw;
+    font-weight: normal;
+    color: #b9d4e0;
+    margin-bottom: 2em;
+  }
+  .btn {
+    display: inline-block;
+    background: #e60000;
+    color: #fff;
+    font-size: 2.6vw;
+    font-weight: bold;
+    padding: 0.7em 1.6em;
+    border-radius: 14px;
+    text-decoration: none;
+    border: 6px solid transparent;
+    transition: all .2s;
+  }
+  /* Mise en évidence quand la télécommande sélectionne le bouton */
+  .btn:focus, .btn:hover {
+    outline: none;
+    background: #ff1a1a;
+    border-color: #ffffff;
+    transform: scale(1.06);
+  }
+  .btn.secondaire {
+    background: #2a5d78;
+    font-size: 1.6vw;
+    margin-top: 1.5em;
+  }
+  .btn.secondaire:focus, .btn.secondaire:hover {
+    background: #3b7fa3;
+  }
+  #statut {
+    margin-top: 2em;
+    font-size: 1.2vw;
+    color: #9fb8c4;
+  }
+</style>
+</head>
+<body>
+
+  <h1>Ste-Rose Maranatha TV</h1>
+  <h2>Église Adventiste du 7<sup>e</sup> Jour – La Rayette, Ste-Rose</h2>
+
+  <a id="lienDirect" class="btn" href="https://www.youtube.com/@adv-larayette/live">
+    ▶  ACCÉDER AU DIRECT
+  </a>
+
+  <br>
+
+  <a class="btn secondaire" href="https://www.youtube.com/@adv-larayette/videos">
+    📺  Voir les vidéos précédentes
+  </a>
+
+  <div id="statut">Chargement du lien…</div>
+
+<script>
+  const bouton = document.getElementById('lienDirect');
+  const statut = document.getElementById('statut');
+
+  // Récupère le lien de la semaine dans lien.json
+  fetch('lien.json?v=' + Date.now())   // ?v= empêche la mise en cache
+    .then(r => r.json())
+    .then(data => {
+      if (data.url) {
+        bouton.href = data.url;
+        statut.textContent = data.info || '';
+      }
+    })
+    .catch(() => {
+      // Si le fichier est absent ou illisible, on garde le lien /live par défaut
+      statut.textContent = '';
+    });
+
+  // Le bouton est sélectionné dès l'ouverture (pratique avec la télécommande)
+  window.addEventListener('load', () => bouton.focus());
+</script>
+
+</body>
+</html>
