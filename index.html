@@ -2,6 +2,7 @@
 <html lang="fr">
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Ste-Rose Maranatha TV</title>
 <style>
   * { margin:0; padding:0; box-sizing:border-box; }
@@ -9,51 +10,261 @@
     background: linear-gradient(160deg, #0f2027, #203a43, #2c5364);
     color: #fff;
     font-family: Arial, sans-serif;
+    min-height: 100vh;
+    overflow: hidden;
+  }
+  .ecran {
     height: 100vh;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
     text-align: center;
+    padding: 2vw;
   }
+  .cache { display: none !important; }
   h1 { font-size: 3.2vw; margin-bottom: 0.4em; }
   h2 { font-size: 1.6vw; font-weight: normal; color: #b9d4e0; margin-bottom: 2em; }
+  h3 { font-size: 2.4vw; margin-bottom: 1em; }
+
+  .boutons { display: flex; gap: 2vw; flex-wrap: wrap; justify-content: center; }
+
   .btn {
     background: #e60000;
     color: #fff;
     font-size: 2.6vw;
     font-weight: bold;
+    font-family: inherit;
     padding: 0.7em 1.6em;
     border-radius: 14px;
     text-decoration: none;
     border: 6px solid transparent;
+    cursor: pointer;
     transition: all .2s;
   }
+  .btn.bleu  { background: #1d6fa5; }
+  .btn.petit { font-size: 1.5vw; padding: 0.5em 1.2em; }
   .btn:focus, .btn:hover {
     outline: none;
-    background: #ff1a1a;
+    filter: brightness(1.2);
     border-color: #fff;
     transform: scale(1.06);
   }
+
+  /* Bouton musique en bas à droite */
+  #btnMusique {
+    position: fixed;
+    right: 2vw;
+    bottom: 2vw;
+    width: 5vw;
+    height: 5vw;
+    min-width: 48px;
+    min-height: 48px;
+    padding: 0;
+    border-radius: 50%;
+    font-size: 2.4vw;
+    line-height: 1;
+    background: rgba(255,255,255,0.15);
+  }
+  #btnMusique.actif { background: #e60000; }
+
+  /* Liste des vidéos */
+  .liste {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(22vw, 1fr));
+    gap: 1.5vw;
+    width: 90vw;
+    max-height: 60vh;
+    overflow-y: auto;
+    padding: 1vw;
+    margin-bottom: 2vw;
+  }
+  .carte {
+    background: rgba(255,255,255,0.1);
+    color: #fff;
+    border: 6px solid transparent;
+    border-radius: 14px;
+    padding: 0;
+    cursor: pointer;
+    overflow: hidden;
+    font-family: inherit;
+    font-size: 1.4vw;
+    transition: all .2s;
+  }
+  .carte img { width: 100%; display: block; aspect-ratio: 16/9; object-fit: cover; }
+  .carte span { display: block; padding: 0.6em; }
+  .carte:focus, .carte:hover { outline: none; border-color: #fff; transform: scale(1.04); }
+
+  /* Lecteur */
+  #ecranLecteur { padding: 0; justify-content: flex-start; }
+  .barre {
+    width: 100%;
+    display: flex;
+    gap: 1.5vw;
+    justify-content: center;
+    padding: 1vw;
+    background: rgba(0,0,0,0.4);
+  }
+  #lecteur { width: 100%; flex: 1; border: 0; }
 </style>
 </head>
 <body>
 
+<script>
+/* ==========================================================
+   ⬇️⬇️⬇️  RÉGLAGES — C'EST ICI QUE VOUS MODIFIEZ TOUT  ⬇️⬇️⬇️
+   ========================================================== */
+
+// 1) Lien du direct (à changer chaque semaine)
+const LIEN_DIRECT = "https://youtube.com/live/Rwdi0nG262I";
+
+// 2) Musique de fond : nom du fichier MP3 déposé dans le dépôt GitHub
+//    (ou une adresse internet complète vers un fichier .mp3).
+//    Elle se lance en appuyant sur le bouton haut-parleur 🔊.
+//    Mettez "" pour ne pas avoir de musique.
+const MUSIQUE = "musique.mp3";
+const VOLUME_MUSIQUE = 0.4;   // de 0 (muet) à 1 (fort)
+
+// 3) Vos vidéos : collez simplement les liens YouTube, un par ligne,
+//    entre guillemets et suivis d'une virgule.
+const VIDEOS = [
+  "https://www.youtube.com/watch?v=Rwdi0nG262I",
+  "https://youtu.be/Rwdi0nG262I",
+];
+
+/* ==========================================================
+   ⬆️⬆️⬆️  NE RIEN MODIFIER EN DESSOUS DE CETTE LIGNE  ⬆️⬆️⬆️
+   ========================================================== */
+</script>
+
+<!-- ÉCRAN D'ACCUEIL -->
+<div class="ecran" id="ecranAccueil">
   <h1>Ste-Rose Maranatha TV</h1>
   <h2>Église Adventiste du 7<sup>ème</sup> Jour – La Rayette</h2>
+  <div class="boutons">
+    <a class="btn lienDirect" id="bouton" href="#">▶ ACCÉDER AU DIRECT</a>
+    <button class="btn bleu" id="btnVideos">🎬 VIDÉOS</button>
+  </div>
+</div>
 
-  <!-- ⬇️⬇️⬇️  C'EST ICI QUE VOUS CHANGEZ LE LIEN CHAQUE SEMAINE  ⬇️⬇️⬇️ -->
-  <a class="btn" id="bouton"
-     href="
-https://youtube.com/live/Rwdi0nG262I">
-     ▶ ACCÉDER AU DIRECT
-  </a>
-  <!-- ⬆️⬆️⬆️  REMPLACEZ SEULEMENT L'ADRESSE ENTRE GUILLEMETS  ⬆️⬆️⬆️ -->
+<!-- ÉCRAN LISTE DES VIDÉOS -->
+<div class="ecran cache" id="ecranVideos">
+  <h3>Nos vidéos</h3>
+  <div class="liste" id="liste"></div>
+  <div class="boutons">
+    <button class="btn petit bleu" data-retour>← Retour</button>
+    <a class="btn petit lienDirect" href="#">▶ Direct</a>
+  </div>
+</div>
+
+<!-- ÉCRAN LECTEUR -->
+<div class="ecran cache" id="ecranLecteur">
+  <div class="barre">
+    <button class="btn petit bleu" id="retourListe">← Vidéos</button>
+    <a class="btn petit lienDirect" href="#">▶ Direct</a>
+    <button class="btn petit bleu" data-retour>⌂ Accueil</button>
+  </div>
+  <iframe id="lecteur" allow="autoplay; encrypted-media; fullscreen" allowfullscreen></iframe>
+</div>
+
+<button class="btn" id="btnMusique" title="Musique">🔇</button>
+<audio id="audio" loop></audio>
 
 <script>
-  window.addEventListener('load', function() {
-    document.getElementById('bouton').focus();
+  const $ = (id) => document.getElementById(id);
+  const audio = $('audio');
+  const btnMusique = $('btnMusique');
+  let ecranActuel = 'ecranAccueil';
+
+  // Lien du direct sur tous les boutons "Direct"
+  document.querySelectorAll('.lienDirect').forEach(a => a.href = LIEN_DIRECT.trim());
+
+  // Extrait l'identifiant d'une vidéo YouTube, quel que soit le format du lien
+  function idYouTube(lien) {
+    const m = lien.trim().match(/(?:v=|youtu\.be\/|embed\/|live\/|shorts\/)([\w-]{11})/);
+    return m ? m[1] : null;
+  }
+
+  // ---------- Navigation entre écrans ----------
+  function afficher(ecran) {
+    document.querySelectorAll('.ecran').forEach(e => e.classList.add('cache'));
+    $(ecran).classList.remove('cache');
+    ecranActuel = ecran;
+    if (ecran !== 'ecranLecteur') $('lecteur').src = 'about:blank';
+    btnMusique.classList.toggle('cache', ecran === 'ecranLecteur' || !MUSIQUE);
+    const premier = $(ecran).querySelector('.carte, .btn');
+    if (premier) premier.focus();
+  }
+
+  // ---------- Liste des vidéos ----------
+  VIDEOS.forEach((lien, n) => {
+    const id = idYouTube(lien);
+    if (!id) return;
+    const carte = document.createElement('button');
+    carte.className = 'carte';
+    carte.innerHTML = `<img src="https://img.youtube.com/vi/${id}/hqdefault.jpg" alt=""><span></span>`;
+    const span = carte.querySelector('span');
+    span.textContent = 'Vidéo ' + (n + 1);
+    // Récupère automatiquement le titre de la vidéo (si possible)
+    fetch('https://noembed.com/embed?url=https://www.youtube.com/watch?v=' + id)
+      .then(r => r.json()).then(d => { if (d.title) span.textContent = d.title; }).catch(() => {});
+    carte.onclick = () => lancerVideo(id);
+    $('liste').appendChild(carte);
   });
+
+  function lancerVideo(id) {
+    musiquePause();
+    $('lecteur').src = `https://www.youtube-nocookie.com/embed/${id}?autoplay=1&rel=0`;
+    afficher('ecranLecteur');
+  }
+
+  $('btnVideos').onclick = () => afficher('ecranVideos');
+  $('retourListe').onclick = () => afficher('ecranVideos');
+  document.querySelectorAll('[data-retour]').forEach(b =>
+    b.onclick = () => afficher('ecranAccueil'));
+
+  // ---------- Musique de fond ----------
+  // Appui sur 🔊 : la musique tourne en boucle jusqu'à une autre action
+  // (lancer une vidéo, le direct) ou un nouvel appui sur le bouton.
+  function majBouton() {
+    const joue = !audio.paused;
+    btnMusique.textContent = joue ? '🔊' : '🔇';
+    btnMusique.classList.toggle('actif', joue);
+  }
+  function musiqueJouer() { if (MUSIQUE) audio.play().then(majBouton).catch(majBouton); }
+  function musiquePause() { audio.pause(); majBouton(); }
+
+  if (MUSIQUE) {
+    audio.src = MUSIQUE;
+    audio.volume = VOLUME_MUSIQUE;
+  } else {
+    btnMusique.classList.add('cache');
+  }
+  audio.addEventListener('play', majBouton);
+  audio.addEventListener('pause', majBouton);
+  btnMusique.onclick = () => audio.paused ? musiqueJouer() : musiquePause();
+  // Accéder au direct arrête la musique
+  document.querySelectorAll('.lienDirect').forEach(a => a.addEventListener('click', musiquePause));
+  majBouton();
+
+  // ---------- Télécommande : flèches pour se déplacer, Retour pour revenir ----------
+  document.addEventListener('keydown', (e) => {
+    const touches = ['ArrowLeft','ArrowRight','ArrowUp','ArrowDown'];
+    if (touches.includes(e.key)) {
+      const elems = [...document.querySelectorAll('#' + ecranActuel + ' .carte, #' + ecranActuel + ' .btn, #btnMusique')]
+        .filter(el => el.offsetParent !== null);
+      let i = elems.indexOf(document.activeElement);
+      i = (e.key === 'ArrowLeft' || e.key === 'ArrowUp') ? i - 1 : i + 1;
+      elems[(i + elems.length) % elems.length].focus();
+      e.preventDefault();
+    }
+    if (e.key === 'Escape' || e.key === 'Backspace' || e.key === 'BrowserBack') {
+      if (ecranActuel === 'ecranLecteur') { afficher('ecranVideos'); e.preventDefault(); }
+      else if (ecranActuel === 'ecranVideos') { afficher('ecranAccueil'); e.preventDefault(); }
+    }
+  });
+
+  window.addEventListener('load', () => $('bouton').focus());
 </script>
 
 </body>
